@@ -10,7 +10,7 @@
       :data="data"
       :tableStyle="tableStyle"
       :timeOut="50"
-      :animated="true"
+      :animated="false"
       :height="250"
       :show-header="true"
       empty-text="暂无数据"
@@ -46,6 +46,8 @@
         align="left"
         prop="age"
         :hidden="true"
+        :sortable="true"
+        :sort="sortClick"
       >
       </dong-clumn-table>
       <dong-clumn-table
@@ -122,7 +124,7 @@ export default {
           id: 2,
           date: "2020-12-23",
           name: "小垃圾",
-          age: 18,
+          age: 12,
           address: "河北省邯郸市",
           idNumber: "130731199923456782",
           gender: "男",
@@ -131,7 +133,7 @@ export default {
           id: 3,
           date: "2020-12-24",
           name: "小妹妹",
-          age: 18,
+          age: 30,
           address: "河北省邯郸市",
           idNumber: "130731199923456782",
           gender: "男",
@@ -140,7 +142,7 @@ export default {
           id: 4,
           date: "2020-12-24",
           name: "啦啦啦啦",
-          age: 18,
+          age: 21,
           address: "河北省邯郸市",
           idNumber: "130731199923456782",
           gender: "男",
@@ -149,7 +151,7 @@ export default {
           id: 5,
           date: "2020-12-24",
           name: "哈哈哈哈",
-          age: 18,
+          age: 14,
           address: "河北省邯郸市",
           idNumber: "130731199923456782",
           gender: "男",
@@ -158,7 +160,7 @@ export default {
           id: 6,
           date: "2018-12-24",
           name: "去去去去uq",
-          age: 18,
+          age: 33,
           address: "河北省邯郸市",
           idNumber: "130731199923456782",
           gender: "男",
@@ -181,6 +183,17 @@ export default {
     },
     formatter(row) {
       return row.gender === "女" ? 0 : 1;
+    },
+    sortClick(data, type, prop) {
+      if (type === "up") {
+        return data.sort((a, b) => {
+          return a[prop] - b[prop];
+        });
+      } else {
+        return data.sort((a, b) => {
+          return b[prop] - a[prop];
+        });
+      }
     },
   },
 };

@@ -1,0 +1,23 @@
+{
+  "id": "2323163",
+  "name": "plugins",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "681191",
+      "name": "排序箭头上",
+      "font_class": "paixujiantoushang",
+      "unicode": "e74c",
+      "unicode_decimal": 59212
+    },
+    {
+      "icon_id": "689268",
+      "name": "排序箭头下",
+      "font_class": "paixujiantouxia1",
+      "unicode": "e7ff",
+      "unicode_decimal": 59391
+    }
+  ]
+}
