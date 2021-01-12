@@ -28,8 +28,8 @@
           :style="{ background: tableStyle.tbody.background, top: top + 'px' }"
           @click="rowClick(item, index)"
           :index="index"
-          @mouseenter="cellMover(item)"
-          @mouseleave="cellLeave(item)"
+          @mouseenter="rowMover(item)"
+          @mouseleave="rowLeave(item)"
         >
           <div
             class="dong_table_cell_clumn"
@@ -127,7 +127,7 @@ export default {
   methods: {
     init() {
       let height = parseInt(this.$slots.default[0].componentInstance.height);
-      if (this.animated && this.height <= this.tabData.length * height) {
+      if (this.animated && this.height <= (this.tabData.length - 1) * height) {
         this.timeId = setInterval(this.cellAnimated, this.timeOut);
       }
     },
@@ -149,18 +149,18 @@ export default {
         this.top = 0;
       }
     },
-    cellMover(item) {
+    rowMover(item) {
       if (this.mouseSuspend) {
         clearInterval(this.timeId);
         this.timeId = null;
       }
-      this.$emit("cell-mover", item);
+      this.$emit("row-mover", item);
     },
-    cellLeave(item) {
+    rowLeave(item) {
       if (this.mouseSuspend) {
         this.init();
       }
-      this.$emit("cell-leave", item);
+      this.$emit("row-leave", item);
     },
   },
   beforeDestroy() {

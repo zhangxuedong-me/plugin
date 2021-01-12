@@ -3,15 +3,15 @@
     <dong-table
       @row-click="rowClick"
       @cell-click="cellClick"
-      @cell-mover="cellMover"
-      @cell-leave="cellLeave"
+      @row-mover="rowMover"
+      @row-leave="rowLeave"
       align="left"
       border
       :data="data"
       :tableStyle="tableStyle"
       :timeOut="50"
       :animated="true"
-      :height="200"
+      :height="250"
       :show-header="true"
       empty-text="暂无数据"
       :mouseSuspend="true"
@@ -173,10 +173,10 @@ export default {
     cellClick(data, type) {
       console.log(data, type);
     },
-    cellMover(item) {
+    rowMover(item) {
       // console.log(item);
     },
-    cellLeave(item) {
+    rowLeave(item) {
       // console.log(item);
     },
     formatter(row) {
