@@ -10,6 +10,7 @@
           color: tableStyle.thead.color,
           fontWeight: tableStyle.thead.fontWeight,
           borderBottom: animated ? '#ebeef5 solid 1px' : 'none',
+          paddingLeft: lazy ? '40px' : '10px',
         }"
       >
         <slot></slot>
@@ -23,14 +24,22 @@
       >
         <div
           class="dong_table_row_clumn"
-          v-for="(item, index) in tabData"
+          v-for="(item, index) in tabData.data"
           :key="index"
           :style="{ background: tableStyle.tbody.background, top: top + 'px' }"
-          @click="rowClick(item, index)"
+          @click="rowClick(data[index], index)"
           :index="index"
-          @mouseenter="rowMover(item)"
-          @mouseleave="rowLeave(item)"
+          @mouseenter="rowMover(data[index])"
+          @mouseleave="rowLeave(data[index])"
         >
+          <div class="open" v-if="lazy">
+            <i v-if="item.options.loadStatus" class="iconfont icon-loading"></i>
+            <i
+              v-else
+              class="iconfont icon-youzhankai"
+              @click.stop="lazyLoad(item, index)"
+            ></i>
+          </div>
           <div
             class="dong_table_cell_clumn"
             v-for="(obj, i) in $slots.default"
@@ -44,12 +53,6 @@
               fontFamily: tableStyle.tbody.fontType,
               fontWeight: tableStyle.tbody.fontWeight,
             }"
-            @click="
-              cellClick(
-                item[obj.componentOptions.propsData.prop],
-                obj.componentOptions.propsData.prop
-              )
-            "
           >
             <table-item :childSolts="obj" :item="item" :obj="obj"></table-item>
           </div>
@@ -113,13 +116,28 @@ export default {
       type: Boolean,
       default: true,
     },
+    lazy: {
+      type: Boolean,
+      default: false,
+    },
+    load: {
+      type: Function,
+      default: null,
+    },
   },
   data() {
     return {
       top: 0,
       timeId: null,
-      tabData: this.data,
+      tabData: {
+        data: [],
+      },
     };
+  },
+  created() {
+    if (this.data && this.data.length) {
+      this.initData();
+    }
   },
   mounted() {
     this.init();
@@ -127,16 +145,27 @@ export default {
   methods: {
     init() {
       let height = parseInt(this.$slots.default[0].componentInstance.height);
-      if (this.animated && this.height <= (this.tabData.length - 1) * height) {
+      if (
+        this.animated &&
+        this.height <= (this.tabData.data.length - 1) * height
+      ) {
         this.timeId = setInterval(this.cellAnimated, this.timeOut);
       }
+    },
+    initData() {
+      this.tabData.data = this.data.map((item) => {
+        return {
+          ...item,
+          options: {
+            loadStatus: false,
+            leave: 0,
+          },
+        };
+      });
     },
     // 表格行的点击事件
     rowClick(item, index) {
       this.$emit("row-click", item, index);
-    },
-    cellClick(item, type) {
-      this.$emit("cell-click", item, type);
     },
     // 表格移动动画
     cellAnimated(e) {
@@ -144,8 +173,8 @@ export default {
       if (this.top > height) {
         this.top--;
       } else {
-        let obj = this.tabData.shift();
-        this.tabData.push(obj);
+        let obj = this.tabData.data.shift();
+        this.tabData.data.push(obj);
         this.top = 0;
       }
     },
@@ -162,6 +191,24 @@ export default {
       }
       this.$emit("row-leave", item);
     },
+    lazyLoad(obj, index) {
+      obj.options.loadStatus = true;
+      new Promise((resolve, reject) => {
+        if (this.load && this.load instanceof Function) {
+          this.load(this.data[index], resolve);
+        }
+        setTimeout(() => {
+          resolve([]);
+        }, 3000);
+      }).then((res) => {
+        obj.options.loadStatus = false;
+        if (res && res instanceof Array) {
+          if (res.length) {
+            console.log(res);
+          }
+        }
+      });
+    },
   },
   beforeDestroy() {
     clearInterval(this.timeId);
@@ -175,11 +222,11 @@ export default {
   border-radius: 3px;
   overflow: hidden;
   overflow-x: auto;
+  overflow-y: auto;
   min-width: 300px;
   position: relative;
   .dong_table_header {
     display: flex;
-    padding-left: 10px;
     position: relative;
     z-index: 100;
   }
@@ -197,8 +244,18 @@ export default {
       padding-left: 10px;
       position: relative;
       transition: background 0.5s linear;
+      align-items: center;
       &:hover {
         background: #f5f7fa !important;
+      }
+      .open {
+        i {
+          width: 0;
+          height: 0;
+          margin-right: 10px;
+          font-size: 20px;
+          cursor: pointer;
+        }
       }
     }
   }

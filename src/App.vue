@@ -2,7 +2,6 @@
   <div id="app" style="padding: 50px">
     <dong-table
       @row-click="rowClick"
-      @cell-click="cellClick"
       @row-mover="rowMover"
       @row-leave="rowLeave"
       align="left"
@@ -15,6 +14,8 @@
       :show-header="true"
       empty-text="暂无数据"
       :mouseSuspend="true"
+      :lazy="true"
+      :load="load"
     >
       <dong-clumn-table
         width="260px"
@@ -172,9 +173,6 @@ export default {
     rowClick(item, index) {
       console.log(item, index);
     },
-    cellClick(data, type) {
-      console.log(data, type);
-    },
     rowMover(item) {
       // console.log(item);
     },
@@ -194,6 +192,28 @@ export default {
           return b[prop] - a[prop];
         });
       }
+    },
+    load(obj, resolve) {
+      resolve([
+        {
+          id: 10,
+          date: "2019-12-24",
+          name: "多来阿蒙",
+          age: 26,
+          address: "上海市",
+          idNumber: "130731199923456782",
+          gender: "女",
+        },
+        {
+          id: 12,
+          date: "2017-12-24",
+          name: "我爱小姐姐",
+          age: 22,
+          address: "河北省张家口市",
+          idNumber: "130731199923456782",
+          gender: "男",
+        },
+      ]);
     },
   },
 };
