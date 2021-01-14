@@ -10,7 +10,7 @@
       :data="data"
       :tableStyle="tableStyle"
       :timeOut="50"
-      :animated="false"
+      :animated="true"
       :height="250"
       :show-header="true"
       empty-text="暂无数据"
