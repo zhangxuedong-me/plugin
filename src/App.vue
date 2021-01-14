@@ -9,13 +9,15 @@
       :data="data"
       :tableStyle="tableStyle"
       :timeOut="50"
-      :animated="true"
+      :animated="false"
       :height="250"
       :show-header="true"
       empty-text="暂无数据"
       :mouseSuspend="true"
       :lazy="true"
       :load="load"
+      tree="children"
+      row-key="id"
     >
       <dong-clumn-table
         width="260px"
@@ -148,24 +150,6 @@ export default {
           idNumber: "130731199923456782",
           gender: "男",
         },
-        {
-          id: 5,
-          date: "2020-12-24",
-          name: "哈哈哈哈",
-          age: 14,
-          address: "河北省邯郸市",
-          idNumber: "130731199923456782",
-          gender: "男",
-        },
-        {
-          id: 6,
-          date: "2018-12-24",
-          name: "去去去去uq",
-          age: 33,
-          address: "河北省邯郸市",
-          idNumber: "130731199923456782",
-          gender: "男",
-        },
       ],
     };
   },
@@ -196,7 +180,7 @@ export default {
     load(obj, resolve) {
       resolve([
         {
-          id: 10,
+          id: Date.now() + "",
           date: "2019-12-24",
           name: "多来阿蒙",
           age: 26,
@@ -205,7 +189,7 @@ export default {
           gender: "女",
         },
         {
-          id: 12,
+          id: Date.now() + 1999,
           date: "2017-12-24",
           name: "我爱小姐姐",
           age: 22,

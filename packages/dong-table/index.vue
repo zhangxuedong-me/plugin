@@ -25,21 +25,14 @@
         <div
           class="dong_table_row_clumn"
           v-for="(item, index) in tabData.data"
-          :key="index"
+          :key="rowKey ? item[rowKey] : index"
           :style="{ background: tableStyle.tbody.background, top: top + 'px' }"
           @click="rowClick(data[index], index)"
-          :index="index"
           @mouseenter="rowMover(data[index])"
           @mouseleave="rowLeave(data[index])"
+          :index="index"
+          v-show="item.options.childStatus"
         >
-          <div class="open" v-if="lazy">
-            <i v-if="item.options.loadStatus" class="iconfont icon-loading"></i>
-            <i
-              v-else
-              class="iconfont icon-youzhankai"
-              @click.stop="lazyLoad(item, index)"
-            ></i>
-          </div>
           <div
             class="dong_table_cell_clumn"
             v-for="(obj, i) in $slots.default"
@@ -54,6 +47,26 @@
               fontWeight: tableStyle.tbody.fontWeight,
             }"
           >
+            <div
+              :style="{ marginLeft: item.options.leve * 23 + 'px' }"
+              class="open"
+              v-if="lazy && i === 0"
+            >
+              <i
+                v-if="item.options.loadStatus === 1"
+                class="iconfont icon-loading"
+              ></i>
+              <i
+                v-if="item.options.loadStatus === 0"
+                class="iconfont icon-youzhankai"
+                @click.stop="lazyLoad(item, index)"
+              ></i>
+              <i
+                v-if="item.options.loadStatus === 2"
+                class="iconfont icon-xiazhankai"
+                @click.stop="uoClick(item, index)"
+              ></i>
+            </div>
             <table-item :childSolts="obj" :item="item" :obj="obj"></table-item>
           </div>
         </div>
@@ -70,6 +83,7 @@
 </template>
 
 <script>
+import { deepClone } from "../../src/utils/index";
 export default {
   name: "DongTable",
   components: {
@@ -124,6 +138,14 @@ export default {
       type: Function,
       default: null,
     },
+    tree: {
+      type: String,
+      default: "children",
+    },
+    rowKey: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
@@ -136,7 +158,7 @@ export default {
   },
   created() {
     if (this.data && this.data.length) {
-      this.initData();
+      this.tabData.data = this.initData(this.data);
     }
   },
   mounted() {
@@ -152,13 +174,15 @@ export default {
         this.timeId = setInterval(this.cellAnimated, this.timeOut);
       }
     },
-    initData() {
-      this.tabData.data = this.data.map((item) => {
+    initData(data, leve) {
+      return data.map((item) => {
         return {
           ...item,
           options: {
-            loadStatus: false,
-            leave: 0,
+            loadStatus: 0,
+            leve: leve ? leve : 0,
+            lazy: false,
+            childStatus: true,
           },
         };
       });
@@ -191,23 +215,62 @@ export default {
       }
       this.$emit("row-leave", item);
     },
-    lazyLoad(obj, index) {
-      obj.options.loadStatus = true;
-      new Promise((resolve, reject) => {
-        if (this.load && this.load instanceof Function) {
-          this.load(this.data[index], resolve);
-        }
-        setTimeout(() => {
-          resolve([]);
-        }, 3000);
-      }).then((res) => {
-        obj.options.loadStatus = false;
-        if (res && res instanceof Array) {
-          if (res.length) {
-            console.log(res);
+    showOrHide(tree, status) {
+      let type = tree.options.loadStatus === 2 ? true : false;
+      tree.children.forEach((child) => {
+        this.tabData.data.forEach((item) => {
+          if (child[this.rowKey] === item[this.rowKey]) {
+            item.options.childStatus = status;
+            if (item.children && item.children.length) {
+              this.showOrHide(item, type);
+            }
           }
-        }
+        });
       });
+    },
+    uoClick(tree, index) {
+      tree.options.loadStatus = 0;
+      this.showOrHide(tree, false);
+    },
+    lazyLoad(tree, index) {
+      // lazy为false才去加载数据，为true就是展开或者收缩
+      if (!tree.options.lazy) {
+        tree.options.loadStatus = 1;
+        tree.options.lazy = true;
+        new Promise((resolve, reject) => {
+          if (this.load && this.load instanceof Function) {
+            this.load(this.data[index], resolve);
+          }
+          setTimeout(() => {
+            resolve([]);
+          }, 3000);
+        }).then((res) => {
+          setTimeout(() => {
+            if (res && res instanceof Array) {
+              if (res.length) {
+                tree.options.loadStatus = 2;
+                this.$set(
+                  tree,
+                  this.tree,
+                  this.initData(res, tree.options.leve + 1)
+                );
+                this.tabData.data.splice(
+                  index + 1,
+                  0,
+                  ...this.initData(res, tree.options.leve + 1)
+                );
+              } else {
+                tree.options.loadStatus = 3;
+              }
+            } else {
+              tree.options.loadStatus = 3;
+            }
+          }, 500);
+        });
+      } else {
+        tree.options.loadStatus = 2;
+        this.showOrHide(tree, true);
+      }
     },
   },
   beforeDestroy() {
@@ -239,6 +302,10 @@ export default {
   }
   .dong_table_content {
     .dong_table_row_clumn {
+      .dong_table_cell_clumn {
+        display: flex;
+        align-items: center;
+      }
       display: flex;
       border-top: #ebeef5 solid 1px;
       padding-left: 10px;
