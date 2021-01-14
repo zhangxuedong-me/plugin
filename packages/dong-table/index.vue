@@ -26,7 +26,11 @@
           class="dong_table_row_clumn"
           v-for="(item, index) in tabData.data"
           :key="rowKey ? item[rowKey] : index"
-          :style="{ background: tableStyle.tbody.background, top: top + 'px' }"
+          :style="{
+            background: tableStyle.tbody.background,
+            top: top + 'px',
+            paddingLeft: item.options.loadStatus === 3 ? '40px' : '10px',
+          }"
           @click="rowClick(data[index], index)"
           @mouseenter="rowMover(data[index])"
           @mouseleave="rowLeave(data[index])"
@@ -83,7 +87,6 @@
 </template>
 
 <script>
-import { deepClone } from "../../src/utils/index";
 export default {
   name: "DongTable",
   components: {
@@ -151,6 +154,8 @@ export default {
     return {
       top: 0,
       timeId: null,
+      customId: null,
+      userId: null,
       tabData: {
         data: [],
       },
@@ -165,6 +170,25 @@ export default {
     this.init();
   },
   methods: {
+    // 表格行的点击事件
+    rowClick(item, index) {
+      this.$emit("row-click", item, index);
+    },
+    // 表格行的滑入事件
+    rowMover(item) {
+      if (this.mouseSuspend) {
+        clearInterval(this.timeId);
+        this.timeId = null;
+      }
+      this.$emit("row-mover", item);
+    },
+    // 表格行的离开事件
+    rowLeave(item) {
+      if (this.mouseSuspend) {
+        this.init();
+      }
+      this.$emit("row-leave", item);
+    },
     init() {
       let height = parseInt(this.$slots.default[0].componentInstance.height);
       if (
@@ -187,10 +211,6 @@ export default {
         };
       });
     },
-    // 表格行的点击事件
-    rowClick(item, index) {
-      this.$emit("row-click", item, index);
-    },
     // 表格移动动画
     cellAnimated(e) {
       let height = -parseInt(this.$slots.default[0].componentInstance.height);
@@ -202,36 +222,25 @@ export default {
         this.top = 0;
       }
     },
-    rowMover(item) {
-      if (this.mouseSuspend) {
-        clearInterval(this.timeId);
-        this.timeId = null;
-      }
-      this.$emit("row-mover", item);
-    },
-    rowLeave(item) {
-      if (this.mouseSuspend) {
-        this.init();
-      }
-      this.$emit("row-leave", item);
-    },
+    // 递归遍历需要收起的子节点
     showOrHide(tree, status) {
-      let type = tree.options.loadStatus === 2 ? true : false;
       tree.children.forEach((child) => {
         this.tabData.data.forEach((item) => {
           if (child[this.rowKey] === item[this.rowKey]) {
             item.options.childStatus = status;
             if (item.children && item.children.length) {
-              this.showOrHide(item, type);
+              this.showOrHide(item, status);
             }
           }
         });
       });
     },
+    // 懒加载收起数据
     uoClick(tree, index) {
       tree.options.loadStatus = 0;
       this.showOrHide(tree, false);
     },
+    // 开启数据懒加载模式
     lazyLoad(tree, index) {
       // lazy为false才去加载数据，为true就是展开或者收缩
       if (!tree.options.lazy) {
@@ -239,13 +248,13 @@ export default {
         tree.options.lazy = true;
         new Promise((resolve, reject) => {
           if (this.load && this.load instanceof Function) {
-            this.load(this.data[index], resolve);
+            this.load(tree, resolve);
           }
-          setTimeout(() => {
+          this.customId = setTimeout(() => {
             resolve([]);
           }, 3000);
         }).then((res) => {
-          setTimeout(() => {
+          this.userId = setTimeout(() => {
             if (res && res instanceof Array) {
               if (res.length) {
                 tree.options.loadStatus = 2;
@@ -273,9 +282,14 @@ export default {
       }
     },
   },
+  // 清除定时器
   beforeDestroy() {
     clearInterval(this.timeId);
+    clearTimeout(this.customId);
+    clearTimeout(this.userId);
     this.timeId = null;
+    this.userId = null;
+    this.customId = null;
   },
 };
 </script>
@@ -308,7 +322,6 @@ export default {
       }
       display: flex;
       border-top: #ebeef5 solid 1px;
-      padding-left: 10px;
       position: relative;
       transition: background 0.5s linear;
       align-items: center;

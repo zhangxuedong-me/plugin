@@ -177,7 +177,7 @@ export default {
         });
       }
     },
-    load(obj, resolve) {
+    load(tree, resolve) {
       resolve([
         {
           id: Date.now() + "",
