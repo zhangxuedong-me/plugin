@@ -155,7 +155,7 @@ export default {
   },
   methods: {
     rowClick(item, index) {
-      console.log(item, index);
+      // console.log(item, index);
     },
     rowMover(item) {
       // console.log(item);

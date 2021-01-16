@@ -68,15 +68,15 @@ export default {
   methods: {
     sortClick(type) {
       // 如果外部使用了自定义排序函数，就使用自定义排序函数，否则使用默认排序
-      if (this.sort) {
+      if (false) {
         this.$parent.tabData.data = this.$parent.initData(
           this.sort(this.$parent.data, type, this.prop)
         );
       } else {
         if (type === "up") {
-          this.$parent.tabData.data.sort((a, b) => {
-            return a[this.prop] - b[this.prop];
-          });
+          // this.$parent.tabData.data.sort((a, b) => {
+          //   return a[this.prop] - b[this.prop];
+          // });
         } else {
           this.$parent.tabData.data.sort((a, b) => {
             return b[this.prop] - a[this.prop];
