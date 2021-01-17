@@ -66,6 +66,23 @@ export default {
     return {};
   },
   methods: {
+    treeSort(data) {
+      return data.sort((a, b) => {
+        return a[this.prop] - b[this.prop];
+      });
+    },
+    traverseTree(data) {
+      data.forEach((item) => {
+        if (item.children && item.children.length) {
+          item.children = this.treeSort(item.children);
+          this.traverseTree(item.children);
+        }
+      });
+      return data;
+    },
+    mixedData(data) {
+      // this.$parent.tabData.data = data;
+    },
     sortClick(type) {
       // 如果外部使用了自定义排序函数，就使用自定义排序函数，否则使用默认排序
       if (false) {
@@ -73,14 +90,15 @@ export default {
           this.sort(this.$parent.data, type, this.prop)
         );
       } else {
+        let data = this.$parent.tabData.data.filter(
+          (item) => item.options.leve === item.options.currentLeve
+        );
+        data = this.treeSort(data);
         if (type === "up") {
-          // this.$parent.tabData.data.sort((a, b) => {
-          //   return a[this.prop] - b[this.prop];
-          // });
+          let sortData = this.traverseTree(data);
+          this.mixedData(sortData);
         } else {
-          this.$parent.tabData.data.sort((a, b) => {
-            return b[this.prop] - a[this.prop];
-          });
+          this.traverseTree(data);
         }
       }
     },

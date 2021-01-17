@@ -90,7 +90,7 @@
 export default {
   name: "DongTable",
   components: {
-    tableItem: () => import("../../examples/components/table-item"),
+    tableItem: () => import("./component/table-item"),
   },
   props: {
     data: {
@@ -232,8 +232,12 @@ export default {
         this.tabData.data.forEach((item) => {
           if (child[this.rowKey] === item[this.rowKey]) {
             item.options.childStatus = status;
+            child.options.childStatus = status;
+            child.options.loadStatus = item.options.loadStatus;
             if (child.children && child.children.length) {
-              this.showOrHide(child, status);
+              if (item.options.loadStatus === 2) {
+                this.showOrHide(child, status);
+              }
             }
           }
         });
@@ -287,10 +291,7 @@ export default {
     },
     treeData(data, tree, res) {
       data.forEach((item) => {
-        if (
-          item[this.rowKey] === tree[this.rowKey] &&
-          item.options.leve === item.options.currentLeve
-        ) {
+        if (item[this.rowKey] === tree[this.rowKey]) {
           this.$set(
             item,
             this.tree,

@@ -10,7 +10,7 @@
       :tableStyle="tableStyle"
       :timeOut="50"
       :animated="false"
-      :height="250"
+      :height="200"
       :show-header="true"
       empty-text="暂无数据"
       :mouseSuspend="true"
