@@ -90,7 +90,7 @@
 export default {
   name: "DongTable",
   components: {
-    tableItem: () => import("../../examples/components/table-item"),
+    tableItem: () => import("./component/table-item"),
   },
   props: {
     data: {
@@ -198,15 +198,19 @@ export default {
         this.timeId = setInterval(this.cellAnimated, this.timeOut);
       }
     },
-    initData(data, leve) {
+    initData(data, leve = 0, currentLeve = 0) {
       return data.map((item) => {
         return {
           ...item,
           options: {
             loadStatus: 0,
-            leve: leve ? leve : 0,
+            leve: leve,
             lazy: false,
             childStatus: true,
+            currentLeve: currentLeve,
+          },
+          parent: {
+            data: {},
           },
         };
       });
@@ -228,8 +232,12 @@ export default {
         this.tabData.data.forEach((item) => {
           if (child[this.rowKey] === item[this.rowKey]) {
             item.options.childStatus = status;
-            if (item.children && item.children.length) {
-              this.showOrHide(item, status);
+            child.options.childStatus = status;
+            child.options.loadStatus = item.options.loadStatus;
+            if (child.children && child.children.length) {
+              if (item.options.loadStatus === 2) {
+                this.showOrHide(child, status);
+              }
             }
           }
         });
@@ -258,15 +266,15 @@ export default {
             if (res && res instanceof Array) {
               if (res.length) {
                 tree.options.loadStatus = 2;
-                this.$set(
-                  tree,
-                  this.tree,
-                  this.initData(res, tree.options.leve + 1)
-                );
+                this.treeData(this.tabData.data, tree, res);
                 this.tabData.data.splice(
                   index + 1,
                   0,
-                  ...this.initData(res, tree.options.leve + 1)
+                  ...this.initData(
+                    res,
+                    tree.options.leve + 1,
+                    tree.options.leve
+                  )
                 );
               } else {
                 tree.options.loadStatus = 3;
@@ -280,6 +288,21 @@ export default {
         tree.options.loadStatus = 2;
         this.showOrHide(tree, true);
       }
+    },
+    treeData(data, tree, res) {
+      data.forEach((item) => {
+        if (item[this.rowKey] === tree[this.rowKey]) {
+          this.$set(
+            item,
+            this.tree,
+            this.initData(res, tree.options.leve + 1, tree.options.leve + 1)
+          );
+        } else {
+          if (item.children && item.children.length) {
+            this.treeData(item.children, tree, res);
+          }
+        }
+      });
     },
   },
   // 清除定时器
