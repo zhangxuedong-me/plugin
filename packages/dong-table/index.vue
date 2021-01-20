@@ -270,15 +270,6 @@ export default {
       if (this.top > height) {
         this.top--;
       } else {
-        // this.tabData.data = this.tabData.data.filter((item) => {
-        //   if (item.options.leve === item.options.currentLeve) {
-        //     return item;
-        //   } else {
-        //     if (item.parent.data.options.loadStatus === 2) {
-        //       return item;
-        //     }
-        //   }
-        // });
         let obj = this.tabData.data.shift();
         this.tabData.data.push(obj);
         this.top = 0;

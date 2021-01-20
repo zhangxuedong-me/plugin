@@ -9,8 +9,8 @@
       :data="data"
       :tableStyle="tableStyle"
       :timeOut="50"
-      :animated="true"
-      :height="200"
+      :animated="false"
+      :height="250"
       :show-header="true"
       empty-text="暂无数据"
       :mouseSuspend="true"
@@ -26,7 +26,7 @@
         prop="date"
       >
         <template slot="header">
-          <div><span>姓名</span>：<input type="text" /></div>
+          <div>日期(精确到日)</div>
         </template>
         <template v-slot="obj">
           <div class="child">{{ obj.row.date + "aaaa" }}</div>
@@ -188,6 +188,15 @@ export default {
           id: 4,
           date: "2020-12-24",
           name: "啦啦啦啦",
+          age: 21,
+          address: "河北省邯郸市",
+          idNumber: "130731199923456782",
+          gender: "男",
+        },
+        {
+          id: 999,
+          date: "2020-12-24",
+          name: "小魔仙",
           age: 21,
           address: "河北省邯郸市",
           idNumber: "130731199923456782",
