@@ -246,7 +246,16 @@ export default {
         tree[this.tree].forEach((child, index) => {
           this.tabData.data.forEach((item, i) => {
             if (child.parent.data[this.rowKey] === item[this.rowKey]) {
-              this.tabData.data.splice(i + 1, 0, child);
+              this.tabData.data.splice(
+                i + 1,
+                0,
+                ...this.initData(
+                  [child],
+                  child.parent.data.options.leve + 1,
+                  child.parent.data.options.leve,
+                  child.parent.data
+                )
+              );
               if (child[this.tree] && child[this.tree].length) {
                 this.renderData(child);
               }
@@ -261,6 +270,15 @@ export default {
       if (this.top > height) {
         this.top--;
       } else {
+        // this.tabData.data = this.tabData.data.filter((item) => {
+        //   if (item.options.leve === item.options.currentLeve) {
+        //     return item;
+        //   } else {
+        //     if (item.parent.data.options.loadStatus === 2) {
+        //       return item;
+        //     }
+        //   }
+        // });
         let obj = this.tabData.data.shift();
         this.tabData.data.push(obj);
         this.top = 0;
