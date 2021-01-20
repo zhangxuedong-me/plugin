@@ -73,7 +73,7 @@
               <i
                 v-if="item.options.loadStatus === 2"
                 class="iconfont icon-xiazhankai"
-                @click.stop="uoClick(item, index)"
+                @click.stop="upClick(item, index)"
               ></i>
             </div>
             <table-item :childSolts="obj" :item="item" :obj="obj"></table-item>
@@ -266,15 +266,15 @@ export default {
         this.top = 0;
       }
     },
-    // 递归遍历需要收起的子节点
+    // 递归遍历需要收起或者显示的子节点
     showOrHide(tree, status) {
-      tree.children.forEach((child) => {
+      tree[this.tree].forEach((child) => {
         this.tabData.data.forEach((item) => {
           if (child[this.rowKey] === item[this.rowKey]) {
             item.options.childStatus = status;
             child.options.childStatus = status;
             child.options.loadStatus = item.options.loadStatus;
-            if (child.children && child.children.length) {
+            if (child[this.tree] && child[this.tree].length) {
               if (item.options.loadStatus === 2) {
                 this.showOrHide(child, status);
               }
@@ -284,9 +284,10 @@ export default {
       });
     },
     // 懒加载收起数据
-    uoClick(tree, index) {
+    upClick(tree, index) {
       tree.options.loadStatus = 0;
       this.showOrHide(tree, false);
+      this.$emit("up-or-down", "up", tree);
     },
     // 开启数据懒加载模式
     lazyLoad(tree, index) {
@@ -326,9 +327,9 @@ export default {
           }, 500);
         });
       } else {
-        console.log(this.tabData.data);
         tree.options.loadStatus = 2;
         this.showOrHide(tree, true);
+        this.$emit("up-or-down", "down", tree);
       }
     },
     treeData(data, tree, res) {
@@ -345,8 +346,8 @@ export default {
             )
           );
         } else {
-          if (item.children && item.children.length) {
-            this.treeData(item.children, tree, res);
+          if (item[this.tree] && item[this.tree].length) {
+            this.treeData(item[this.tree], tree, res);
           }
         }
       });

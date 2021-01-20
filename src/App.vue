@@ -16,6 +16,7 @@
       :mouseSuspend="true"
       tree="children"
       row-key="id"
+      @up-or-down="upOrDown"
     >
       <dong-clumn-table
         width="260px"
@@ -229,6 +230,9 @@ export default {
     },
     formatter(row) {
       return row.gender === "女" ? 0 : 1;
+    },
+    upOrDown(type, tree) {
+      // console.log(type, tree);
     },
     sortClick(data, type, prop) {
       if (type === "up") {
