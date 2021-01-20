@@ -52,9 +52,14 @@
             }"
           >
             <div
-              :style="{ marginLeft: item.options.leve * 23 + 'px' }"
+              :style="{
+                marginLeft:
+                  i === 0 ? item.options.leve * (lazy ? 23 : 40) + 'px' : '',
+              }"
+            ></div>
+            <div
               class="open"
-              v-if="lazy && i === 0"
+              v-if="(lazy && i === 0) || (item[tree] && i === 0)"
             >
               <i
                 v-if="item.options.loadStatus === 1"
@@ -164,6 +169,9 @@ export default {
   created() {
     if (this.data && this.data.length) {
       this.tabData.data = this.initData(this.data);
+      if (!(this.lazy && this.load instanceof Function)) {
+        this.renderData(this.tabData.data);
+      }
     }
   },
   mounted() {
@@ -199,8 +207,8 @@ export default {
       }
     },
     initData(data, leve = 0, currentLeve = 0) {
-      return data.map((item) => {
-        return {
+      return data.map((item, index) => {
+        item = {
           ...item,
           options: {
             loadStatus: 0,
@@ -209,10 +217,28 @@ export default {
             childStatus: true,
             currentLeve: currentLeve,
           },
-          parent: {
-            data: {},
-          },
         };
+        if (!(this.lazy && this.load instanceof Function)) {
+          if (item.options.leve > 0) {
+            item.options.childStatus = false;
+          }
+          if (item[this.tree] && item[this.tree].length) {
+            item.options.lazy = true;
+            item[this.tree] = this.initData(
+              item[this.tree],
+              item.options.leve + 1,
+              item.options.currentLeve + 1
+            );
+          }
+        }
+        return item;
+      });
+    },
+    renderData(tree) {
+      tree.forEach((item, index) => {
+        if (item[this.tree] && item[this.tree].length) {
+          this.tabData.data.splice(index + 1, 0, ...item[this.tree]);
+        }
       });
     },
     // 表格移动动画

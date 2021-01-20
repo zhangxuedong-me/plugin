@@ -14,8 +14,6 @@
       :show-header="true"
       empty-text="暂无数据"
       :mouseSuspend="true"
-      :lazy="true"
-      :load="load"
       tree="children"
       row-key="id"
     >
@@ -122,6 +120,28 @@ export default {
           address: "河北省张家口市",
           idNumber: "130731199912456789",
           gender: "女",
+          children: [
+            {
+              id: 111,
+              date: "2015-12-24",
+              name: "大漂亮",
+              age: 18,
+              address: "张家口市",
+              idNumber: "130731200123456782",
+              gender: "女",
+              children: [
+                {
+                  id: 444,
+                  date: "2015-12-24",
+                  name: "AK-47",
+                  age: 18,
+                  address: "张家口市",
+                  idNumber: "130731200123456782",
+                  gender: "女",
+                },
+              ],
+            },
+          ],
         },
         {
           id: 2,
@@ -131,6 +151,17 @@ export default {
           address: "河北省邯郸市",
           idNumber: "130731199923456782",
           gender: "男",
+          children: [
+            {
+              id: 222,
+              date: "2015-12-24",
+              name: "大姐姐",
+              age: 18,
+              address: "张家口市",
+              idNumber: "130731200123456782",
+              gender: "女",
+            },
+          ],
         },
         {
           id: 3,
