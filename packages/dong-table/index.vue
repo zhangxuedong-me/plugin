@@ -170,7 +170,10 @@ export default {
     if (this.data && this.data.length) {
       this.tabData.data = this.initData(this.data);
       if (!(this.lazy && this.load instanceof Function)) {
-        this.renderData(this.tabData.data);
+        let newTabData = new Array(...this.tabData.data);
+        newTabData.forEach((item) => {
+          this.renderData(item);
+        });
       }
     }
   },
@@ -206,7 +209,7 @@ export default {
         this.timeId = setInterval(this.cellAnimated, this.timeOut);
       }
     },
-    initData(data, leve = 0, currentLeve = 0) {
+    initData(data, leve = 0, currentLeve = 0, parentData = null) {
       return data.map((item, index) => {
         item = {
           ...item,
@@ -216,6 +219,9 @@ export default {
             lazy: false,
             childStatus: true,
             currentLeve: currentLeve,
+          },
+          parent: {
+            data: parentData,
           },
         };
         if (!(this.lazy && this.load instanceof Function)) {
@@ -227,7 +233,8 @@ export default {
             item[this.tree] = this.initData(
               item[this.tree],
               item.options.leve + 1,
-              item.options.currentLeve + 1
+              item.options.currentLeve + 1,
+              item
             );
           }
         }
@@ -235,11 +242,18 @@ export default {
       });
     },
     renderData(tree) {
-      tree.forEach((item, index) => {
-        if (item[this.tree] && item[this.tree].length) {
-          this.tabData.data.splice(index + 1, 0, ...item[this.tree]);
-        }
-      });
+      if (tree[this.tree] && tree[this.tree].length) {
+        tree[this.tree].forEach((child, index) => {
+          this.tabData.data.forEach((item, i) => {
+            if (child.parent.data[this.rowKey] === item[this.rowKey]) {
+              this.tabData.data.splice(i + 1, 0, child);
+              if (child[this.tree] && child[this.tree].length) {
+                this.renderData(child);
+              }
+            }
+          });
+        });
+      }
     },
     // 表格移动动画
     cellAnimated(e) {
@@ -299,7 +313,8 @@ export default {
                   ...this.initData(
                     res,
                     tree.options.leve + 1,
-                    tree.options.leve
+                    tree.options.leve,
+                    tree
                   )
                 );
               } else {
@@ -311,6 +326,7 @@ export default {
           }, 500);
         });
       } else {
+        console.log(this.tabData.data);
         tree.options.loadStatus = 2;
         this.showOrHide(tree, true);
       }
@@ -321,7 +337,12 @@ export default {
           this.$set(
             item,
             this.tree,
-            this.initData(res, tree.options.leve + 1, tree.options.leve + 1)
+            this.initData(
+              res,
+              tree.options.leve + 1,
+              tree.options.leve + 1,
+              tree
+            )
           );
         } else {
           if (item.children && item.children.length) {

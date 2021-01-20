@@ -160,6 +160,17 @@ export default {
               address: "张家口市",
               idNumber: "130731200123456782",
               gender: "女",
+              children: [
+                {
+                  id: 666,
+                  date: "2015-12-24",
+                  name: "吧啦啦",
+                  age: 18,
+                  address: "张家口市",
+                  idNumber: "130731200123456782",
+                  gender: "女",
+                },
+              ],
             },
           ],
         },
@@ -180,6 +191,28 @@ export default {
           address: "河北省邯郸市",
           idNumber: "130731199923456782",
           gender: "男",
+          children: [
+            {
+              id: 5656,
+              date: "2015-12-24",
+              name: "魔法师",
+              age: 18,
+              address: "张家口市",
+              idNumber: "130731200123456782",
+              gender: "女",
+              children: [
+                {
+                  id: 6565,
+                  date: "2015-12-24",
+                  name: "张厉害",
+                  age: 18,
+                  address: "张家口市",
+                  idNumber: "130731200123456782",
+                  gender: "女",
+                },
+              ],
+            },
+          ],
         },
       ],
     };
