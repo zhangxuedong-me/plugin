@@ -66,17 +66,44 @@ export default {
     return {};
   },
   methods: {
+    treeSort(data, type) {
+      if (type === "up") {
+        return data.sort((a, b) => {
+          return a[this.prop] - b[this.prop];
+        });
+      } else {
+        return data.sort((a, b) => {
+          return b[this.prop] - a[this.prop];
+        });
+      }
+    },
+    traverseTree(data, type) {
+      data.forEach((item) => {
+        if (item.children && item.children.length) {
+          item.children = this.treeSort(item.children, type);
+          this.traverseTree(item.children);
+        }
+      });
+      return data;
+    },
+    mixedData(data) {
+      let newTabData = new Array(...data);
+      newTabData.forEach((item) => {
+        this.$parent.renderData(item, true);
+      });
+    },
     sortClick(type) {
       // 如果外部使用了自定义排序函数，就使用自定义排序函数，否则使用默认排序
-      if (this.sort) {
-        this.$parent.tabData.data = this.$parent.initData(
-          this.sort(this.$parent.data, type, this.prop)
-        );
+      let data = this.$parent.tabData.data.filter(
+        (item) => item.options.leve === item.options.currentLeve
+      );
+      if (this.sort && this.sort instanceof Function) {
+        this.$parent.tabData.data = this.sort(data, type, this.prop);
       } else {
-        if (type === "up") {
-        } else {
-        }
+        data = this.treeSort(data, type);
+        this.$parent.tabData.data = this.traverseTree(data, type);
       }
+      this.mixedData(this.$parent.tabData.data);
     },
   },
 };

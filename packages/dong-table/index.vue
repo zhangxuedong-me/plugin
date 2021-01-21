@@ -178,7 +178,9 @@ export default {
     }
   },
   mounted() {
-    this.init();
+    if (this.animated) {
+      this.init();
+    }
   },
   methods: {
     // 表格行的点击事件
@@ -187,7 +189,7 @@ export default {
     },
     // 表格行的滑入事件
     rowMover(item) {
-      if (this.mouseSuspend) {
+      if (this.mouseSuspend && this.animated) {
         clearInterval(this.timeId);
         this.timeId = null;
       }
@@ -195,21 +197,22 @@ export default {
     },
     // 表格行的离开事件
     rowLeave(item) {
-      if (this.mouseSuspend) {
+      if (this.mouseSuspend && this.animated) {
         this.init();
       }
       this.$emit("row-leave", item);
     },
     init() {
-      let height = parseInt(this.$slots.default[0].componentInstance.height);
-      if (
-        this.animated &&
-        this.height <= (this.tabData.data.length - 1) * height
-      ) {
-        this.timeId = setInterval(this.cellAnimated, this.timeOut);
-      }
+      this.timeId = setInterval(this.cellAnimated, this.timeOut);
     },
-    initData(data, leve = 0, currentLeve = 0, parentData = null) {
+    // 对数据进行初始化转化成我们需要的数据
+    initData(
+      data,
+      leve = 0,
+      currentLeve = 0,
+      parentData = null,
+      childStatus = true
+    ) {
       return data.map((item, index) => {
         item = {
           ...item,
@@ -217,7 +220,7 @@ export default {
             loadStatus: 0,
             leve: leve,
             lazy: false,
-            childStatus: true,
+            childStatus: childStatus,
             currentLeve: currentLeve,
           },
           parent: {
@@ -225,9 +228,6 @@ export default {
           },
         };
         if (!(this.lazy && this.load instanceof Function)) {
-          if (item.options.leve > 0) {
-            item.options.childStatus = false;
-          }
           if (item[this.tree] && item[this.tree].length) {
             item.options.lazy = true;
             item[this.tree] = this.initData(
@@ -236,24 +236,46 @@ export default {
               item.options.currentLeve + 1,
               item
             );
+            if (data.length === 1 && data[0].options) {
+              item.options.loadStatus = data[0].options.loadStatus;
+            }
           }
         }
         return item;
       });
     },
+    // 排序之后对数据的层级状态的显示与否
+    sortShow(child) {
+      let status = true;
+      if (child.options.leve > 0) {
+        if (child.parent.data.options.loadStatus !== 2) {
+          status = false;
+        } else {
+          if (child.parent.data.options.childStatus) {
+            status = true;
+          } else {
+            status = false;
+          }
+        }
+      }
+      return status;
+    },
+    // 对不需要懒加载但有层架关系的数据进行处理
     renderData(tree) {
       if (tree[this.tree] && tree[this.tree].length) {
         tree[this.tree].forEach((child, index) => {
           this.tabData.data.forEach((item, i) => {
             if (child.parent.data[this.rowKey] === item[this.rowKey]) {
+              let status = this.sortShow(child);
               this.tabData.data.splice(
                 i + 1,
                 0,
                 ...this.initData(
                   [child],
-                  child.parent.data.options.leve + 1,
-                  child.parent.data.options.leve,
-                  child.parent.data
+                  item.options.leve + 1,
+                  item.options.leve,
+                  item,
+                  status
                 )
               );
               if (child[this.tree] && child[this.tree].length) {
@@ -295,8 +317,7 @@ export default {
     // 懒加载收起数据
     upClick(tree, index) {
       tree.options.loadStatus = 0;
-      this.showOrHide(tree, false);
-      this.$emit("up-or-down", "up", tree);
+      this.handleParentData(tree, false, "up", "up-or-down");
     },
     // 开启数据懒加载模式
     lazyLoad(tree, index) {
@@ -337,10 +358,22 @@ export default {
         });
       } else {
         tree.options.loadStatus = 2;
-        this.showOrHide(tree, true);
-        this.$emit("up-or-down", "down", tree);
+        this.handleParentData(tree, true, "down", "up-or-down");
       }
     },
+    // 层级显示或者隐藏的总开关
+    handleParentData(tree, status, type, eventName) {
+      this.showOrHide(tree, status);
+      this.$emit(eventName, type, tree);
+      if (tree.parent.data) {
+        tree.parent.data[this.tree].forEach((item) => {
+          if (item[this.rowKey] === tree[this.rowKey]) {
+            item.options.loadStatus = tree.options.loadStatus;
+          }
+        });
+      }
+    },
+    // 把懒加载数据初始化成层级树
     treeData(data, tree, res) {
       data.forEach((item) => {
         if (item[this.rowKey] === tree[this.rowKey]) {
